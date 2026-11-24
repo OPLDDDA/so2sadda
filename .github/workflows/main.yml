@@ -22,12 +22,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install insert_dylib
-        run: |
-          git clone https://github.com
-          sudo mkdir -p /usr/local/bin && sudo clang -x c insert_dylib/insert_dylib/main.c -o /usr/local/bin/insert_dylib
-
-
       - name: Download source IPA
         run: |
           curl -fL --retry 3 -o game.ipa "${{ github.event.inputs.ipa_url }}"
