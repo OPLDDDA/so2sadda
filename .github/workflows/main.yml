@@ -1,19 +1,12 @@
-name: Build gadget IPA
+name: Download Frida Gadget
 
 on:
   workflow_dispatch:
     inputs:
-      ipa_url:
-        description: 'Прямая ссылка на расшифрованный Standoff 2 .ipa'
-        required: true
       gadget_version:
         description: 'Версия Frida gadget'
         required: false
         default: '16.2.2'
-      output_name:
-        description: 'Имя выходного файла без .ipa'
-        required: false
-        default: 'Standoff2-Gadget'
 
 jobs:
   build:
@@ -22,28 +15,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download source IPA
+      - name: Download & Extract Frida Gadget
         run: |
-          curl -fL --retry 3 -o game.ipa "${{ github.event.inputs.ipa_url }}"
-          ls -lh game.ipa
-
-      - name: Download Frida gadget
-        run: |
-          VER="${{ github.event.inputs.gadget_version }}"
-          curl -fL --retry 3 -o gadget.dylib.gz \
-            "https://github.com/frida/frida/releases/download/${VER}/frida-gadget-${VER}-ios-universal.dylib.gz"
+          VERSION="${{ github.event.inputs.gadget_version }}"
+          curl -fL "https://github.com{VERSION}/frida-gadget-${VERSION}-ios-universal.dylib.gz" -o gadget.dylib.gz
           gunzip -f gadget.dylib.gz
-          chmod 755 gadget.dylib
-          ls -lh gadget.dylib
+          mv gadget.dylib FridaGadget.dylib
+          ls -lh FridaGadget.dylib
 
-      - name: Inject gadget and build IPA
-        run: |
-          bash tools/package-gadget.sh game.ipa "$PWD/gadget.dylib"
-          mv game-gadget.ipa "${{ github.event.inputs.output_name }}.ipa"
-
-      - name: Upload IPA
+      - name: Upload FridaGadget.dylib
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.output_name }}-ipa
-          path: ${{ github.event.inputs.output_name }}.ipa
-          if-no-files-found: error
+          name: FridaGadget-dylib
+          path: FridaGadget.dylib
