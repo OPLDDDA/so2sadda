@@ -18,8 +18,14 @@ jobs:
       - name: Download & Extract Frida Gadget
         run: |
           VERSION="${{ github.event.inputs.gadget_version }}"
-          curl -fL "https://github.com{VERSION}/frida-gadget-${VERSION}-ios-universal.dylib.gz" -o gadget.dylib.gz
-          gunzip -f gadget.dylib.gz
+          DOMAIN="github.com"
+          BASE="https://${DOMAIN}/frida/frida/releases/download/${VERSION}/frida-gadget-${VERSION}-ios-universal.dylib"
+          if curl -fL "${BASE}.xz" -o gadget.dylib.xz; then
+            xz -d -f gadget.dylib.xz
+          else
+            curl -fL "${BASE}.gz" -o gadget.dylib.gz
+            gunzip -f gadget.dylib.gz
+          fi
           mv gadget.dylib FridaGadget.dylib
           ls -lh FridaGadget.dylib
 
